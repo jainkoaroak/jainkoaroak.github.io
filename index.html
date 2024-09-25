@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Wallet Balance Checker (SOL & USDC)</title>
+    <title>Solana Wallet Balance Checker (Profit Calculation)</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 </head>
 <body>
-    <h1>Solana Wallet Balance Checker (SOL & USDC)</h1>
+    <h1>Solana Wallet Balance Checker (SOL & USDC with Profit Calculation)</h1>
     
     <div id="wallet-balances">
         <!-- Wallet balances will be displayed here -->
@@ -29,6 +29,37 @@
 
         // Create a connection to the Solana network via QuickNode
         const connection = new solanaWeb3.Connection(QUICKNODE_RPC, 'confirmed');
+
+        // Object to store the cumulative changes for each wallet
+        const cumulativeChanges = {};
+
+        // Capture the time when the page is first loaded
+        const startTime = new Date();
+
+        // Store the current SOL to USD price globally
+        let solToUsdPrice = 0;
+
+        // Fetch SOL to USD price from CoinGecko API
+        async function fetchSolPrice() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                const data = await response.json();
+                solToUsdPrice = data.solana.usd;
+            } catch (error) {
+                console.error('Error fetching SOL price:', error);
+            }
+        }
+
+        // Function to format time in a readable format (e.g., 11:13 AM)
+        function formatTime(date) {
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 hour should be displayed as 12
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
 
         // Function to fetch SOL balance
         async function getSolBalance(publicKey) {
@@ -61,7 +92,29 @@
             }
         }
 
-        // Function to display balances for each wallet
+        // Function to calculate and accumulate changes
+        function accumulateChange(wallet, solChange, usdcChange) {
+            if (!cumulativeChanges[wallet]) {
+                // Initialize the wallet's cumulative change object
+                cumulativeChanges[wallet] = {
+                    sol: 0,
+                    usdc: 0
+                };
+            }
+
+            // Add the current changes to the cumulative totals
+            cumulativeChanges[wallet].sol += solChange;
+            cumulativeChanges[wallet].usdc += usdcChange;
+        }
+
+        // Function to calculate profit based on SOL to USD conversion
+        function calculateProfit(wallet) {
+            const solChangeInUsd = cumulativeChanges[wallet].sol * solToUsdPrice; // Convert SOL change to USD
+            const totalUsdcChange = cumulativeChanges[wallet].usdc;
+            return solChangeInUsd + totalUsdcChange; // Combine SOL (in USD) and USDC changes
+        }
+
+        // Function to fetch and display balances, accumulated changes, and profit
         async function displayBalances() {
             const balancesDiv = document.getElementById('wallet-balances');
             balancesDiv.innerHTML = ''; // Clear previous results
@@ -78,17 +131,46 @@
                 const solBalance = await getSolBalance(publicKey);
                 const usdcBalance = await getUsdcBalance(publicKey);
 
-                // Update the balanceDiv with the fetched balances
+                // Retrieve last stored balances from localStorage
+                const lastStored = JSON.parse(localStorage.getItem(address)) || {};
+                const lastSolBalance = lastStored.sol || solBalance;
+                const lastUsdcBalance = lastStored.usdc || usdcBalance;
+
+                // Calculate the changes since the last fetch
+                const solChange = solBalance - lastSolBalance;
+                const usdcChange = usdcBalance - lastUsdcBalance;
+
+                // Accumulate the changes
+                accumulateChange(address, solChange, usdcChange);
+
+                // Calculate profit in USD
+                const profit = calculateProfit(address);
+
+                // Update the balanceDiv with the fetched balances, accumulated changes, and profit
                 balanceDiv.innerHTML = `
                     <strong>Wallet:</strong> ${address} <br>
                     <strong>SOL Balance:</strong> ${solBalance} SOL <br>
-                    <strong>USDC Balance:</strong> ${usdcBalance} USDC
+                    <strong>USDC Balance:</strong> ${usdcBalance} USDC <br>
+                    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+                    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+                    <strong>Profit (USD):</strong> $${profit.toFixed(2)} <br>
+                    <em>Since ${formatTime(startTime)}</em>
                 `;
+
+                // Store the current balances in localStorage for the next check
+                localStorage.setItem(address, JSON.stringify({
+                    sol: solBalance,
+                    usdc: usdcBalance
+                }));
             }
         }
 
-        // Fetch and display balances when the page loads
+        // Fetch the SOL price initially
+        await fetchSolPrice();
+
+        // Fetch and display balances every 30 seconds
         displayBalances();
+        setInterval(displayBalances, 30000); // 30 seconds = 30,000 milliseconds
     </script>
 </body>
 </html>
