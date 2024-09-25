@@ -34,20 +34,37 @@
         ];
 
         async function getWalletBalance(address) {
-            // Use the provided RPC node URL for the connection
-            const connection = new solanaWeb3.Connection("https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/453cbf2bda88286b7262b593a2d885dd", 'confirmed');
+            // Use the provided RPC node URL with the CORS proxy
+            const rpcUrl = 'https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/453cbf2bda88286b7262b593a2d885dd';
+            const proxyUrl = 'https://proxy.cors.sh/';
+            const apiKey = 'temp_215a41c47f18d32c102fa2e970bd0fac';
 
+            // Setting up fetch with the CORS proxy and API key
             try {
-                // Convert address to a public key
-                const publicKey = new solanaWeb3.PublicKey(address);
+                const response = await fetch(proxyUrl + rpcUrl, {
+                    method: 'POST',
+                    headers: {
+                        'x-cors-api-key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: "2.0",
+                        id: 1,
+                        method: "getBalance",
+                        params: [
+                            new solanaWeb3.PublicKey(address).toString(),
+                            { commitment: "confirmed" }
+                        ]
+                    })
+                });
                 
-                // Get the balance in lamports (1 SOL = 1e9 lamports)
-                const balance = await connection.getBalance(publicKey);
-                
-                // Convert lamports to SOL
-                const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
-                
-                return balanceInSol;
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const balance = data.result.value / solanaWeb3.LAMPORTS_PER_SOL; // Convert lamports to SOL
+                return balance;
             } catch (error) {
                 console.error('Error fetching balance for', address, error);
                 return 'Error';
