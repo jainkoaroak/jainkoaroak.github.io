@@ -3,29 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Mainnet Test</title>
+    <title>Solana Wallet Balances</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .wallet-balance {
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
-    <h1>Solana Mainnet Connection Test</h1>
-    <div id="connection-status">Connecting...</div>
+    <h1>Solana Wallet Balances</h1>
+
+    <div id="balances">
+        <!-- Wallet balances will be displayed here -->
+    </div>
 
     <script>
-        async function testSolanaConnection() {
-            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+        // Solana wallet addresses
+        const walletAddresses = [
+            "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4",
+            "8GXLZ45rs12XNDfhotptgPcqCxjXdAWZTQ4oq2FytYNx",
+            "D3K4ELAuYxK9HF93LNQ8uJi281xwMtoGG9fTnx7HyQBS"
+        ];
+
+        async function getWalletBalance(address) {
+            // Use the provided RPC node URL for the connection
+            const connection = new solanaWeb3.Connection("https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/453cbf2bda88286b7262b593a2d885dd", 'confirmed');
+
             try {
-                // Ping the mainnet and see if it returns any response.
-                const version = await connection.getVersion();
-                console.log("Connection successful:", version);
-                document.getElementById('connection-status').innerText = "Connected to Solana Mainnet!";
+                // Convert address to a public key
+                const publicKey = new solanaWeb3.PublicKey(address);
+                
+                // Get the balance in lamports (1 SOL = 1e9 lamports)
+                const balance = await connection.getBalance(publicKey);
+                
+                // Convert lamports to SOL
+                const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                
+                return balanceInSol;
             } catch (error) {
-                console.error("Connection failed:", error);
-                document.getElementById('connection-status').innerText = "Failed to connect to Solana Mainnet.";
+                console.error('Error fetching balance for', address, error);
+                return 'Error';
             }
         }
 
-        // Run the connection test on page load.
-        testSolanaConnection();
+        async function displayBalances() {
+            const balancesDiv = document.getElementById('balances');
+            
+            for (const address of walletAddresses) {
+                // Create a div to hold the wallet balance
+                const balanceDiv = document.createElement('div');
+                balanceDiv.className = 'wallet-balance';
+                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Balance:</strong> Fetching...`;
+                
+                // Add the div to the page
+                balancesDiv.appendChild(balanceDiv);
+
+                // Fetch the balance and update the div
+                const balance = await getWalletBalance(address);
+                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Balance:</strong> ${balance} SOL`;
+            }
+        }
+
+        // Fetch and display balances on page load
+        displayBalances();
     </script>
 </body>
 </html>
