@@ -3,93 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Wallet Balances</title>
+    <title>Solana Wallet Balance Checker (SOL & USDC)</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-        }
-        .wallet-balance {
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #4CAF50;
-        }
-    </style>
 </head>
 <body>
-    <h1>Solana Wallet Balances</h1>
-
-    <div id="balances">
+    <h1>Solana Wallet Balance Checker (SOL & USDC)</h1>
+    
+    <div id="wallet-balances">
         <!-- Wallet balances will be displayed here -->
     </div>
 
     <script>
-        // Solana wallet addresses
+        // Solana Wallet Addresses
         const walletAddresses = [
-            "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4",
             "8GXLZ45rs12XNDfhotptgPcqCxjXdAWZTQ4oq2FytYNx",
+            "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4",
             "D3K4ELAuYxK9HF93LNQ8uJi281xwMtoGG9fTnx7HyQBS"
         ];
 
-        async function getWalletBalance(address) {
-            // Use the provided RPC node URL with the CORS proxy
-            const rpcUrl = 'https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/453cbf2bda88286b7262b593a2d885dd';
-            const proxyUrl = 'https://proxy.cors.sh/';
-            const apiKey = 'temp_215a41c47f18d32c102fa2e970bd0fac';
+        // QuickNode RPC Endpoint
+        const QUICKNODE_RPC = 'https://quick-misty-log.solana-mainnet.quiknode.pro/3c93ef8b6bbc5754a03772939cf986d81d45def2';
 
-            // Setting up fetch with the CORS proxy and API key
+        // USDC Mint Address
+        const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+
+        // Create a connection to the Solana network via QuickNode
+        const connection = new solanaWeb3.Connection(QUICKNODE_RPC, 'confirmed');
+
+        // Function to fetch SOL balance
+        async function getSolBalance(publicKey) {
             try {
-                const response = await fetch(proxyUrl + rpcUrl, {
-                    method: 'POST',
-                    headers: {
-                        'x-cors-api-key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        jsonrpc: "2.0",
-                        id: 1,
-                        method: "getBalance",
-                        params: [
-                            new solanaWeb3.PublicKey(address).toString(),
-                            { commitment: "confirmed" }
-                        ]
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const balance = data.result.value / solanaWeb3.LAMPORTS_PER_SOL; // Convert lamports to SOL
-                return balance;
+                const balance = await connection.getBalance(publicKey);
+                return balance / solanaWeb3.LAMPORTS_PER_SOL; // Convert lamports to SOL
             } catch (error) {
-                console.error('Error fetching balance for', address, error);
+                console.error(`Error fetching SOL balance for ${publicKey.toString()}:`, error);
                 return 'Error';
             }
         }
 
-        async function displayBalances() {
-            const balancesDiv = document.getElementById('balances');
-            
-            for (const address of walletAddresses) {
-                // Create a div to hold the wallet balance
-                const balanceDiv = document.createElement('div');
-                balanceDiv.className = 'wallet-balance';
-                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Balance:</strong> Fetching...`;
-                
-                // Add the div to the page
-                balancesDiv.appendChild(balanceDiv);
-
-                // Fetch the balance and update the div
-                const balance = await getWalletBalance(address);
-                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Balance:</strong> ${balance} SOL`;
+        // Function to fetch USDC balance
+        async function getUsdcBalance(publicKey) {
+            try {
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    publicKey, 
+                    { mint: new solanaWeb3.PublicKey(USDC_MINT_ADDRESS) }
+                );
+                if (tokenAccounts.value.length > 0) {
+                    const usdcAccountInfo = tokenAccounts.value[0].account.data.parsed.info;
+                    const usdcBalance = usdcAccountInfo.tokenAmount.uiAmount;
+                    return usdcBalance;
+                } else {
+                    return 0; // No USDC token account found
+                }
+            } catch (error) {
+                console.error(`Error fetching USDC balance for ${publicKey.toString()}:`, error);
+                return 'Error';
             }
         }
 
-        // Fetch and display balances on page load
+        // Function to display balances for each wallet
+        async function displayBalances() {
+            const balancesDiv = document.getElementById('wallet-balances');
+            balancesDiv.innerHTML = ''; // Clear previous results
+
+            for (const address of walletAddresses) {
+                const publicKey = new solanaWeb3.PublicKey(address);
+
+                // Create a div to hold the wallet balances
+                const balanceDiv = document.createElement('div');
+                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Fetching balances...</strong>`;
+                balancesDiv.appendChild(balanceDiv);
+
+                // Fetch SOL and USDC balances
+                const solBalance = await getSolBalance(publicKey);
+                const usdcBalance = await getUsdcBalance(publicKey);
+
+                // Update the balanceDiv with the fetched balances
+                balanceDiv.innerHTML = `
+                    <strong>Wallet:</strong> ${address} <br>
+                    <strong>SOL Balance:</strong> ${solBalance} SOL <br>
+                    <strong>USDC Balance:</strong> ${usdcBalance} USDC
+                `;
+            }
+        }
+
+        // Fetch and display balances when the page loads
         displayBalances();
     </script>
 </body>
