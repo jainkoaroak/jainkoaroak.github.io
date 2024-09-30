@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -174,7 +174,27 @@
             return solChangeInUsd + totalUsdcChange; // Combine SOL (in USD) and USDC changes
         }
 
-        // Function to fetch and display balances, accumulated changes, and profit
+        // Function to calculate profit per minute
+        function calculateProfitPerMinute(wallet) {
+            const currentTime = new Date();
+
+            // Calculate the elapsed time in minutes
+            const elapsedTimeInMinutes = (currentTime - startTime) / 60000; // 1 minute = 60000 milliseconds
+
+            if (elapsedTimeInMinutes <= 0) {
+                return 0; // Avoid division by zero or negative time
+            }
+
+            // Calculate total profit for the wallet
+            const totalProfit = calculateProfit(wallet);
+
+            // Calculate profit per minute
+            const profitPerMinute = totalProfit / elapsedTimeInMinutes;
+
+            return profitPerMinute;
+        }
+
+        // Function to fetch and display balances, accumulated changes, and profit per minute
         async function displayBalances() {
             const balancesDiv = document.getElementById('wallet-balances');
             balancesDiv.innerHTML = ''; // Clear previous results
@@ -207,7 +227,10 @@
                 // Calculate profit in USD
                 const profit = calculateProfit(address);
 
-                // Update the balanceDiv with the fetched balances, accumulated changes, and profit
+                // Calculate profit per minute
+                const profitPerMinute = calculateProfitPerMinute(address);
+
+                // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
                 balanceDiv.innerHTML = `
                     <strong>Wallet:</strong> ${address} <br>
                     <strong>SOL Balance:</strong> ${solBalance} SOL <br>
@@ -215,6 +238,7 @@
                     <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
                     <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
                     <strong>Profit (USD):</strong> $${profit.toFixed(2)} <br>
+                    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
                     <em>Since ${formatTime(startTime)}</em>
                 `;
 
