@@ -1,3 +1,4 @@
+
 <html lang="en">
 
 <head>
@@ -5,75 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet Checker</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-   <style>
-    /* Background styling */
-    body {
-        background-image: url('https://background-tiles.com/overview/blue/patterns/large/1061.png');
-        background-repeat: repeat;
-        font-family: 'Roboto', sans-serif;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-    }
-
-    /* Main content container */
-    .container {
-        background: rgba(255, 255, 255, 0.85);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        max-width: 100%;
-        width: 90%;
-        text-align: center;
-    }
-
-    /* Header styling */
-    h1 {
-        font-family: 'Helvetica', sans-serif;
-        color: #2c3e50;
-        font-size: 24px;
-        margin-bottom: 20px;
-    }
-
-    /* Wallet balance grid */
-    #wallet-balances {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-    }
-
-    /* Wallet balance box */
-    .wallet-box {
-        background-color: #f7f9fb;
-        border-radius: 12px;
-        padding: 15px;
-        margin: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        text-align: left;
-        width: 45%; /* Two columns layout */
-    }
-
-    /* Wallet balance text */
-    .wallet-box strong {
-        color: #3498db;
-    }
-
-    /* Footer note styling */
-    em {
-        font-size: 12px;
-        color: #7f8c8d;
-    }
-
-    /* Responsive layout */
-    @media (max-width: 768px) {
-        .wallet-box {
-            width: 100%;
+    <style>
+        /* Background styling */
+        body {
+            background-image: url('https://background-tiles.com/overview/blue/patterns/large/1061.png');
+            background-repeat: repeat;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
+
+        /* Main content container */
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Header styling */
+        h1 {
+            font-family: 'Helvetica', sans-serif;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Wallet balance grid */
+        #wallet-balances {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        /* Wallet balance box */
+        .wallet-box {
+            background-color: #f7f9fb;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            width: 45%; /* Two columns layout */
+        }
+
+        /* Wallet balance text */
+        .wallet-box strong {
+            color: #3498db;
+        }
+
+        /* Footer note styling */
+        em {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Responsive layout */
+        @media (max-width: 768px) {
+            .wallet-box {
+                width: 100%;
+            }
+        }
+        
+            /* Styling the SOL balance and warning inline */
+    .sol-balance-wrapper {
+        display: inline-flex;
+        align-items: center; /* Vertically align the text and icon */
     }
-</style>
+
+    .sol-balance-wrapper img {
+        margin-left: 8px; /* Adds some space between the text and the warning icon */
+    }
+
+    .low-sol-warning {
+        color: red;
+        font-style: italic;
+        margin-left: 5px;
+    }
+    </style>
 </head>
 
 <body>
@@ -214,6 +231,8 @@
             return solChangeInUsd + wsolChangeInUsd + totalUsdcChange; // Combine SOL (in USD), WSOL, and USDC changes
         }
         
+        //
+        
                 // Function to calculate profit per minute
         function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
@@ -233,6 +252,17 @@
 
             return profitPerMinute;
         }
+
+// Function to display a warning if SOL balance is low
+function checkLowSolWarning(solBalance) {
+    if (solBalance < 0.10) {
+        return `
+            <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
+            <em class="low-sol-warning">You are running low on SOL!</em>
+        `;
+    }
+    return '';
+}
 
         // Function to fetch and display balances, accumulated changes, and profit per minute
         async function displayBalances() {
@@ -273,19 +303,25 @@
                 // Calculate profit per minute
                 const profitPerMinute = calculateProfitPerMinute(address);
 
-                // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
-                balanceDiv.innerHTML = `
-                    <strong>Wallet:</strong> ${address} <br>
-                    <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL <br>
-                    <strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
-                    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
-                    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
-                    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
-                    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
-                    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
-                    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
-                    <em>Since ${formatTime(startTime)}</em>
-                `;
+                // Check if SOL balance is low and add a warning if applicable
+                const lowSolWarning = checkLowSolWarning(solBalance);
+
+              // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
+balanceDiv.innerHTML = `
+    <strong>Wallet:</strong> ${address} <br>
+    <div class="sol-balance-wrapper">
+        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
+        ${checkLowSolWarning(solBalance)}
+    </div>
+    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
+    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
+    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
+    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
+    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
+    <em>Since ${formatTime(startTime)}</em>
+`;
 
                 // Store the current balances in localStorage for the next check
                 localStorage.setItem(address, JSON.stringify({
