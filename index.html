@@ -5,60 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet Checker</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-    <style>
-        /* Background styling */
-        body {
-            background-image: url('https://background-tiles.com/overview/blue/patterns/large/1061.png');
-            background-repeat: repeat;
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+   <style>
+    /* Background styling */
+    body {
+        background-image: url('https://background-tiles.com/overview/blue/patterns/large/1061.png');
+        background-repeat: repeat;
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
 
-        /* Main content container */
-        .container {
-            background: rgba(255, 255, 255, 0.85);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
+    /* Main content container */
+    .container {
+        background: rgba(255, 255, 255, 0.85);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        max-width: 100%;
+        width: 90%;
+        text-align: center;
+    }
 
-        /* Header styling */
-        h1 {
-            font-family: 'Helvetica', sans-serif;
-            color: #2c3e50;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
+    /* Header styling */
+    h1 {
+        font-family: 'Helvetica', sans-serif;
+        color: #2c3e50;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
 
-        /* Wallet balance box */
+    /* Wallet balance grid */
+    #wallet-balances {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    /* Wallet balance box */
+    .wallet-box {
+        background-color: #f7f9fb;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        width: 45%; /* Two columns layout */
+    }
+
+    /* Wallet balance text */
+    .wallet-box strong {
+        color: #3498db;
+    }
+
+    /* Footer note styling */
+    em {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
         .wallet-box {
-            background-color: #f7f9fb;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            text-align: left;
+            width: 100%;
         }
-
-        /* Wallet balance text */
-        .wallet-box strong {
-            color: #3498db;
-        }
-
-        /* Footer note styling */
-        em {
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-    </style>
+    }
+</style>
 </head>
 
 <body>
