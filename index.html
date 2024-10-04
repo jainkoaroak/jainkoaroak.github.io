@@ -1,3 +1,4 @@
+
 <html lang="en">
 
 <head>
@@ -115,7 +116,7 @@
         ];
 
         // QuickNode RPC Endpoint
-        const QUICKNODE_RPC = 'https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/631c5a1be220a15e4e51c2cd2ab1955b';
+        const QUICKNODE_RPC = 'https://quick-misty-log.solana-mainnet.quiknode.pro/3c93ef8b6bbc5754a03772939cf986d81d45def2';
 
         // Token Mint Addresses
         const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -230,8 +231,10 @@
             const totalUsdcChange = cumulativeChanges[wallet].usdc;
             return solChangeInUsd + wsolChangeInUsd + totalUsdcChange; // Combine SOL (in USD), WSOL, and USDC changes
         }
-
-        // Function to calculate profit per minute
+        
+        //
+        
+                // Function to calculate profit per minute
         function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
 
@@ -251,89 +254,77 @@
             return profitPerMinute;
         }
 
-        // Function to display a warning if SOL balance is low
-        function checkLowSolWarning(solBalance) {
-            if (solBalance < 0.10) {
-                return `
-                    <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
-                    <em class="low-sol-warning">You are running low on SOL!</em>
-                `;
-            }
-            return '';
-        }
+// Function to display a warning if SOL balance is low
+function checkLowSolWarning(solBalance) {
+    if (solBalance < 0.10) {
+        return `
+            <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
+            <em class="low-sol-warning">You are running low on SOL!</em>
+        `;
+    }
+    return '';
+}
 
         // Function to fetch and display balances, accumulated changes, and profit per minute
         async function displayBalances() {
             const balancesDiv = document.getElementById('wallet-balances');
+            balancesDiv.innerHTML = ''; // Clear previous results
 
             for (const address of walletAddresses) {
                 const publicKey = new solanaWeb3.PublicKey(address);
 
-                // Check if the wallet box already exists, if not create it
-                let balanceDiv = document.getElementById(`wallet-box-${address}`);
-                if (!balanceDiv) {
-                    balanceDiv = document.createElement('div');
-                    balanceDiv.classList.add('wallet-box');
-                    balanceDiv.id = `wallet-box-${address}`; // Assign a unique ID to the wallet box
-                    balanceDiv.innerHTML = `
-                        <strong>Wallet:</strong> ${address} <br>
-                        <div class="sol-balance-wrapper">
-                            <strong>SOL Balance:</strong> <span id="sol-balance-${address}">Fetching...</span> &nbsp;SOL
-                            <span id="sol-warning-${address}"></span>
-                        </div>
-                        <br><strong>WSOL Balance:</strong> <span id="wsol-balance-${address}">Fetching...</span> WSOL <br>
-                        <strong>USDC Balance:</strong> <span id="usdc-balance-${address}">Fetching...</span> USDC <br>
-                        <strong>Total SOL Change:</strong> <span id="sol-change-${address}">0.0000</span> SOL <br>
-                        <strong>Total WSOL Change:</strong> <span id="wsol-change-${address}">0.0000</span> WSOL <br>
-                        <strong>Total USDC Change:</strong> <span id="usdc-change-${address}">0.0000</span> USDC <br>
-                        <strong>Profit (USD):</strong> $<span id="profit-${address}">0.0000</span> <br>
-                        <strong>Profit Per Minute:</strong> $<span id="profit-minute-${address}">0.0000</span> / min <br>
-                        <em>Since ${formatTime(startTime)}</em>
-                    `;
-                    balancesDiv.appendChild(balanceDiv);
-                }
+                // Create a div to hold the wallet balances
+                const balanceDiv = document.createElement('div');
+                balanceDiv.classList.add('wallet-box');
+                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Fetching balances...</strong>`;
+                balancesDiv.appendChild(balanceDiv);
 
                 // Fetch SOL, WSOL, and USDC balances
                 const solBalance = await getSolBalance(publicKey);
                 const wsolBalance = await getWsolBalance(publicKey);
                 const usdcBalance = await getUsdcBalance(publicKey);
 
-                // Update the stored balances and calculate changes
+                // Retrieve last stored balances from localStorage
                 const lastStored = JSON.parse(localStorage.getItem(address)) || {};
                 const lastSolBalance = lastStored.sol || solBalance;
                 const lastWsolBalance = lastStored.wsol || wsolBalance;
                 const lastUsdcBalance = lastStored.usdc || usdcBalance;
 
-                // Calculate changes, but retain previous values if NaN is encountered
-                let solChange = solBalance - lastSolBalance;
-                let wsolChange = wsolBalance - lastWsolBalance;
-                let usdcChange = usdcBalance - lastUsdcBalance;
+                // Calculate the changes since the last fetch
+                const solChange = solBalance - lastSolBalance;
+                const wsolChange = wsolBalance - lastWsolBalance;
+                const usdcChange = usdcBalance - lastUsdcBalance;
 
-                // Check for NaN and retain previous values if NaN is encountered
-                if (isNaN(solChange)) solChange = cumulativeChanges[address]?.sol || 0;
-                if (isNaN(wsolChange)) wsolChange = cumulativeChanges[address]?.wsol || 0;
-                if (isNaN(usdcChange)) usdcChange = cumulativeChanges[address]?.usdc || 0;
-
-                // Accumulate changes after handling NaN
+                // Accumulate the changes
                 accumulateChange(address, solChange, wsolChange, usdcChange);
 
+                // Calculate profit in USD
                 const profit = calculateProfit(address);
+
+                // Calculate profit per minute
                 const profitPerMinute = calculateProfitPerMinute(address);
 
-                // Update only the balance and other dynamic fields
-                document.getElementById(`sol-balance-${address}`).textContent = solBalance.toFixed(4);
-                document.getElementById(`wsol-balance-${address}`).textContent = wsolBalance.toFixed(4);
-                document.getElementById(`usdc-balance-${address}`).textContent = usdcBalance.toFixed(4);
-                document.getElementById(`sol-change-${address}`).textContent = cumulativeChanges[address].sol.toFixed(4);
-                document.getElementById(`wsol-change-${address}`).textContent = cumulativeChanges[address].wsol.toFixed(4);
-                document.getElementById(`usdc-change-${address}`).textContent = cumulativeChanges[address].usdc.toFixed(4);
-                document.getElementById(`profit-${address}`).textContent = profit.toFixed(4);
-                document.getElementById(`profit-minute-${address}`).textContent = profitPerMinute.toFixed(4);
+                // Check if SOL balance is low and add a warning if applicable
+                const lowSolWarning = checkLowSolWarning(solBalance);
 
-                // Check if a warning is necessary for low SOL
-                document.getElementById(`sol-warning-${address}`).innerHTML = checkLowSolWarning(solBalance);
+              // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
+balanceDiv.innerHTML = `
+    <strong>Wallet:</strong> ${address} <br>
+    <div class="sol-balance-wrapper">
+        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
+        ${checkLowSolWarning(solBalance)}
+    </div>
+    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
+    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
+    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
+    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
+    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
+    <em>Since ${formatTime(startTime)}</em>
+`;
 
-                // Store the current balances for the next check
+                // Store the current balances in localStorage for the next check
                 localStorage.setItem(address, JSON.stringify({
                     sol: solBalance,
                     wsol: wsolBalance,
@@ -346,9 +337,9 @@
         async function init() {
             await fetchSolPrice(); // Wait for the SOL price to be fetched
 
-            // Fetch and display balances every second
+            // Fetch and display balances every 30 seconds
             displayBalances();
-            setInterval(displayBalances, 10000); // Ping every ten seconds
+            setInterval(displayBalances, 30000); // 30 seconds = 30,000 milliseconds
         }
 
         // Start the initialization
