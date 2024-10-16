@@ -1,0 +1,350 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Checker</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <style>
+        /* Background styling */
+        body {
+            background-image: url('https://background-tiles.com/overview/orange/patterns/large/1049.png');
+            background-repeat: repeat;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Main content container */
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Header styling */
+        h1 {
+            font-family: 'Helvetica', sans-serif;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Wallet balance grid */
+        #wallet-balances {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        /* Wallet balance box */
+        .wallet-box {
+            background-color: #f7f9fb;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            width: 45%; /* Two columns layout */
+        }
+
+        /* Wallet balance text */
+        .wallet-box strong {
+            color: #e28743;
+        }
+
+        /* Footer note styling */
+        em {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Responsive layout */
+        @media (max-width: 768px) {
+            .wallet-box {
+                width: 100%;
+            }
+        }
+
+        /* Styling the SOL balance and warning inline */
+        .sol-balance-wrapper {
+            display: inline-flex;
+            align-items: center; /* Vertically align the text and icon */
+        }
+
+        .sol-balance-wrapper img {
+            margin-left: 8px; /* Adds some space between the text and the warning icon */
+        }
+
+        .low-sol-warning {
+            color: red;
+            font-style: italic;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Wallet Balance Checker</h1>
+
+        <div id="wallet-balances">
+            <!-- Wallet balances will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Solana Wallet Addresses and their respective names
+        const walletInfo = {
+            "NOWALLETID": "ORACLE PROXY",
+            "NOWALLETID": "GCLOUD PROXY",
+            "NOWALLETID": "PC PROXY",
+            "NOWALLETID": "RACKNERD PROXY",
+            "NOWALLETID": "GCLOUD2 PROXY",
+            "NOWALLETID": "ORACLE2 PROXY"
+        };
+
+        // List of wallet addresses (keys from walletInfo)
+        const walletAddresses = Object.keys(walletInfo);
+
+        // QuickNode RPC Endpoint
+        const QUICKNODE_RPC = 'https://stylish-compatible-firefly.solana-mainnet.quiknode.pro/dadd2abd3cdaddd070a5c17788d69c7b229cfac2';
+
+        // Token Mint Addresses
+        const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+        const WSOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'; // WSOL Mint Address
+
+        // Create a connection to the Solana network via QuickNode
+        const connection = new solanaWeb3.Connection(QUICKNODE_RPC, 'confirmed');
+
+        // Object to store the cumulative changes for each wallet
+        const cumulativeChanges = {};
+
+        // Capture the time when the page is first loaded
+        const startTime = new Date();
+
+        // Store the current SOL to USD price globally
+        let solToUsdPrice = 0;
+
+        // Fetch SOL to USD price from CoinGecko API
+        async function fetchSolPrice() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                const data = await response.json();
+                solToUsdPrice = data.solana.usd;
+            } catch (error) {
+                console.error('Error fetching SOL price:', error);
+            }
+        }
+
+        // Function to format time in a readable format (e.g., 11:13 AM)
+        function formatTime(date) {
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 hour should be displayed as 12
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        // Function to fetch SOL balance
+        async function getSolBalance(publicKey) {
+            try {
+                const balance = await connection.getBalance(publicKey);
+                return balance / solanaWeb3.LAMPORTS_PER_SOL; // Convert lamports to SOL
+            } catch (error) {
+                console.error(`Error fetching SOL balance for ${publicKey.toString()}:`, error);
+                return 'Error';
+            }
+        }
+
+        // Function to fetch WSOL balance
+        async function getWsolBalance(publicKey) {
+            try {
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    publicKey,
+                    { mint: new solanaWeb3.PublicKey(WSOL_MINT_ADDRESS) }
+                );
+                if (tokenAccounts.value.length > 0) {
+                    const wsolAccountInfo = tokenAccounts.value[0].account.data.parsed.info;
+                    const wsolBalance = wsolAccountInfo.tokenAmount.uiAmount;
+                    return wsolBalance;
+                } else {
+                    return 0; // No WSOL token account found
+                }
+            } catch (error) {
+                console.error(`Error fetching WSOL balance for ${publicKey.toString()}:`, error);
+                return 'Error';
+            }
+        }
+
+        // Function to fetch USDC balance
+        async function getUsdcBalance(publicKey) {
+            try {
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    publicKey,
+                    { mint: new solanaWeb3.PublicKey(USDC_MINT_ADDRESS) }
+                );
+                if (tokenAccounts.value.length > 0) {
+                    const usdcAccountInfo = tokenAccounts.value[0].account.data.parsed.info;
+                    const usdcBalance = usdcAccountInfo.tokenAmount.uiAmount;
+                    return usdcBalance;
+                } else {
+                    return 0; // No USDC token account found
+                }
+            } catch (error) {
+                console.error(`Error fetching USDC balance for ${publicKey.toString()}:`, error);
+                return 'Error';
+            }
+        }
+
+        // Function to calculate and accumulate changes
+        function accumulateChange(wallet, solChange, wsolChange, usdcChange) {
+            if (!cumulativeChanges[wallet]) {
+                // Initialize the wallet's cumulative change object
+                cumulativeChanges[wallet] = {
+                    sol: 0,
+                    wsol: 0,
+                    usdc: 0
+                };
+            }
+
+            // Add the current changes to the cumulative totals
+            cumulativeChanges[wallet].sol += solChange;
+            cumulativeChanges[wallet].wsol += wsolChange;
+            cumulativeChanges[wallet].usdc += usdcChange;
+        }
+
+        // Function to calculate profit based on SOL to USD conversion
+        function calculateProfit(wallet) {
+            const solChangeInUsd = cumulativeChanges[wallet].sol * solToUsdPrice; // Convert SOL change to USD
+            const wsolChangeInUsd = cumulativeChanges[wallet].wsol * solToUsdPrice; // WSOL is worth the same as SOL
+            const totalUsdcChange = cumulativeChanges[wallet].usdc;
+            return solChangeInUsd + wsolChangeInUsd + totalUsdcChange; // Combine SOL (in USD), WSOL, and USDC changes
+        }
+
+        // Function to calculate profit per minute
+                function calculateProfitPerMinute(wallet) {
+            const currentTime = new Date();
+
+            // Calculate the elapsed time in minutes
+            const elapsedTimeInMinutes = (currentTime - startTime) / 60000; // 1 minute = 60000 milliseconds
+
+            if (elapsedTimeInMinutes <= 0) {
+                return 0; // Avoid division by zero or negative time
+            }
+
+            // Calculate total profit for the wallet
+            const totalProfit = calculateProfit(wallet);
+
+            // Calculate profit per minute
+            const profitPerMinute = totalProfit / elapsedTimeInMinutes;
+
+            return profitPerMinute;
+        }
+
+        // Function to display a warning if SOL balance is low
+        function checkLowSolWarning(solBalance) {
+            if (solBalance < 0.10) {
+                return `
+                    <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
+                    <em class="low-sol-warning">You are running low on SOL!</em>
+                `;
+            }
+            return '';
+        }
+
+        // Function to fetch and display balances, accumulated changes, and profit per minute
+        async function displayBalances() {
+            const balancesDiv = document.getElementById('wallet-balances');
+            balancesDiv.innerHTML = ''; // Clear previous results
+
+            for (const address of walletAddresses) {
+                const publicKey = new solanaWeb3.PublicKey(address);
+
+                // Create a div to hold the wallet balances
+                const balanceDiv = document.createElement('div');
+                balanceDiv.classList.add('wallet-box');
+                balanceDiv.innerHTML = `<strong>Wallet Name:</strong> ${walletInfo[address]} <br> <strong>Fetching balances...</strong>`;
+                balancesDiv.appendChild(balanceDiv);
+
+                // Fetch SOL, WSOL, and USDC balances
+                const solBalance = await getSolBalance(publicKey);
+                const wsolBalance = await getWsolBalance(publicKey);
+                const usdcBalance = await getUsdcBalance(publicKey);
+
+                // Retrieve last stored balances from localStorage
+                const lastStored = JSON.parse(localStorage.getItem(address)) || {};
+                const lastSolBalance = lastStored.sol || solBalance;
+                const lastWsolBalance = lastStored.wsol || wsolBalance;
+                const lastUsdcBalance = lastStored.usdc || usdcBalance;
+
+                // Calculate the changes since the last fetch
+                const solChange = solBalance - lastSolBalance;
+                const wsolChange = wsolBalance - lastWsolBalance;
+                const usdcChange = usdcBalance - lastUsdcBalance;
+
+                // Accumulate the changes
+                accumulateChange(address, solChange, wsolChange, usdcChange);
+
+                // Calculate profit in USD
+                const profit = calculateProfit(address);
+
+                // Calculate profit per minute
+                const profitPerMinute = calculateProfitPerMinute(address);
+
+                // Check if SOL balance is low and add a warning if applicable
+                const lowSolWarning = checkLowSolWarning(solBalance);
+
+                // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
+                balanceDiv.innerHTML = `
+                    <strong>Wallet Name:</strong> ${walletInfo[address]} <br>
+                    <strong>Wallet Address:</strong> ${address} <br>
+                    <div class="sol-balance-wrapper">
+                        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
+                        ${lowSolWarning}
+                    </div>
+                    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
+                    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
+                    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+                    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
+                    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+                    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
+                    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
+                    <em>Since ${formatTime(startTime)}</em>
+                `;
+
+                // Store the current balances in localStorage for the next check
+                localStorage.setItem(address, JSON.stringify({
+                    sol: solBalance,
+                    wsol: wsolBalance,
+                    usdc: usdcBalance
+                }));
+            }
+        }
+
+        // Initialize the entire process
+        async function init() {
+            await fetchSolPrice(); // Wait for the SOL price to be fetched
+
+            // Fetch and display balances every 30 seconds
+            displayBalances();
+            setInterval(displayBalances, 30000); // 30 seconds = 30,000 milliseconds
+        }
+
+        // Start the initialization
+        init();
+    </script>
+</body>
+
+</html>
+           
