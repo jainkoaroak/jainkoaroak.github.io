@@ -1,3 +1,4 @@
+Certainly! Below is the complete rewritten code with the wallet names properly integrated:
 
 <html lang="en">
 
@@ -74,22 +75,22 @@
                 width: 100%;
             }
         }
-        
-            /* Styling the SOL balance and warning inline */
-    .sol-balance-wrapper {
-        display: inline-flex;
-        align-items: center; /* Vertically align the text and icon */
-    }
 
-    .sol-balance-wrapper img {
-        margin-left: 8px; /* Adds some space between the text and the warning icon */
-    }
+        /* Styling the SOL balance and warning inline */
+        .sol-balance-wrapper {
+            display: inline-flex;
+            align-items: center; /* Vertically align the text and icon */
+        }
 
-    .low-sol-warning {
-        color: red;
-        font-style: italic;
-        margin-left: 5px;
-    }
+        .sol-balance-wrapper img {
+            margin-left: 8px; /* Adds some space between the text and the warning icon */
+        }
+
+        .low-sol-warning {
+            color: red;
+            font-style: italic;
+            margin-left: 5px;
+        }
     </style>
 </head>
 
@@ -103,14 +104,18 @@
     </div>
 
     <script>
-        // Solana Wallet Addresses
-        const walletAddresses = [
-            "8GXLZ45rs12XNDfhotptgPcqCxjXdAWZTQ4oq2FytYNx",
-            "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4",
-            "FXzPE8DoP3wDjWUF7AasQZYmNdkWTqu8vQMALEo9TFJV",
-            "D3K4ELAuYxK9HF93LNQ8uJi281xwMtoGG9fTnx7HyQBS",
-            "HN4xCN6SP8ZusNupoznTgscoWLVBwEDg9qNG99toxAwF",
-        ];
+        // Solana Wallet Addresses and their respective names
+        const walletInfo = {
+            "8GXLZ45rs12XNDfhotptgPcqCxjXdAWZTQ4oq2FytYNx": "ORACLE",
+            "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4": "GCLOUD",
+            "FXzPE8DoP3wDjWUF7AasQZYmNdkWTqu8vQMALEo9TFJV": "PC",
+            "D3K4ELAuYxK9HF93LNQ8uJi281xwMtoGG9fTnx7HyQBS": "RACKNERD",
+            "HN4xCN6SP8ZusNupoznTgscoWLVBwEDg9qNG99toxAwF": "GCLOUD2",
+            "2h4VTjyFyfKcPxNX8QKWtCALq1UcG1MqiyL5nF3RzX9A": "ORACLE2"
+        };
+
+        // List of wallet addresses (keys from walletInfo)
+        const walletAddresses = Object.keys(walletInfo);
 
         // QuickNode RPC Endpoint
         const QUICKNODE_RPC = 'https://stylish-compatible-firefly.solana-mainnet.quiknode.pro/dadd2abd3cdaddd070a5c17788d69c7b229cfac2';
@@ -228,11 +233,9 @@
             const totalUsdcChange = cumulativeChanges[wallet].usdc;
             return solChangeInUsd + wsolChangeInUsd + totalUsdcChange; // Combine SOL (in USD), WSOL, and USDC changes
         }
-        
-        //
-        
-                // Function to calculate profit per minute
-        function calculateProfitPerMinute(wallet) {
+
+        // Function to calculate profit per minute
+                function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
 
             // Calculate the elapsed time in minutes
@@ -251,16 +254,16 @@
             return profitPerMinute;
         }
 
-// Function to display a warning if SOL balance is low
-function checkLowSolWarning(solBalance) {
-    if (solBalance < 0.10) {
-        return `
-            <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
-            <em class="low-sol-warning">You are running low on SOL!</em>
-        `;
-    }
-    return '';
-}
+        // Function to display a warning if SOL balance is low
+        function checkLowSolWarning(solBalance) {
+            if (solBalance < 0.10) {
+                return `
+                    <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
+                    <em class="low-sol-warning">You are running low on SOL!</em>
+                `;
+            }
+            return '';
+        }
 
         // Function to fetch and display balances, accumulated changes, and profit per minute
         async function displayBalances() {
@@ -273,7 +276,7 @@ function checkLowSolWarning(solBalance) {
                 // Create a div to hold the wallet balances
                 const balanceDiv = document.createElement('div');
                 balanceDiv.classList.add('wallet-box');
-                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Fetching balances...</strong>`;
+                balanceDiv.innerHTML = `<strong>Wallet Name:</strong> ${walletInfo[address]} <br> <strong>Fetching balances...</strong>`;
                 balancesDiv.appendChild(balanceDiv);
 
                 // Fetch SOL, WSOL, and USDC balances
@@ -304,22 +307,23 @@ function checkLowSolWarning(solBalance) {
                 // Check if SOL balance is low and add a warning if applicable
                 const lowSolWarning = checkLowSolWarning(solBalance);
 
-              // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
-balanceDiv.innerHTML = `
-    <strong>Wallet:</strong> ${address} <br>
-    <div class="sol-balance-wrapper">
-        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
-        ${checkLowSolWarning(solBalance)}
-    </div>
-    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
-    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
-    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
-    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
-    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
-    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
-    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
-    <em>Since ${formatTime(startTime)}</em>
-`;
+                // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
+                balanceDiv.innerHTML = `
+                    <strong>Wallet Name:</strong> ${walletInfo[address]} <br>
+                    <strong>Wallet Address:</strong> ${address} <br>
+                    <div class="sol-balance-wrapper">
+                        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
+                        ${lowSolWarning}
+                    </div>
+                    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
+                    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
+                    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+                    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
+                    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+                    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
+                    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
+                    <em>Since ${formatTime(startTime)}</em>
+                `;
 
                 // Store the current balances in localStorage for the next check
                 localStorage.setItem(address, JSON.stringify({
@@ -345,3 +349,4 @@ balanceDiv.innerHTML = `
 </body>
 
 </html>
+           
