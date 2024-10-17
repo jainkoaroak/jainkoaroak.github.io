@@ -38,6 +38,14 @@
             margin-bottom: 20px;
         }
 
+        /* Total profit per minute styling */
+        #total-profit {
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
         /* Wallet balance grid */
         #wallet-balances {
             display: flex;
@@ -95,6 +103,8 @@
 <body>
     <div class="container">
         <h1>Wallet Balance Checker</h1>
+        <!-- Display total profit per minute here -->
+        <div id="total-profit">$0.00 / min</div>
 
         <div id="wallet-balances">
             <!-- Wallet balances will be displayed here -->
@@ -108,6 +118,7 @@
             "6exdeJpSwbwU7kF31PuPaTHQsparyd5P3Etk1gxH6Fn4": "GCLOUD",
             "FXzPE8DoP3wDjWUF7AasQZYmNdkWTqu8vQMALEo9TFJV": "PC",
             "D3K4ELAuYxK9HF93LNQ8uJi281xwMtoGG9fTnx7HyQBS": "RACKNERD",
+            "BqQuKTKrGLkPKbdGHV5wfV1ZXPEsF4r8LPHr9oAaRuws": "RACKNERD PROXY",
             "HN4xCN6SP8ZusNupoznTgscoWLVBwEDg9qNG99toxAwF": "GCLOUD2",
             "2h4VTjyFyfKcPxNX8QKWtCALq1UcG1MqiyL5nF3RzX9A": "ORACLE2"
         };
@@ -217,8 +228,8 @@
                     usdc: 0
                 };
             }
-
-            // Add the current changes to the cumulative totals
+            
+                        // Add the current changes to the cumulative totals
             cumulativeChanges[wallet].sol += solChange;
             cumulativeChanges[wallet].wsol += wsolChange;
             cumulativeChanges[wallet].usdc += usdcChange;
@@ -233,7 +244,7 @@
         }
 
         // Function to calculate profit per minute
-                function calculateProfitPerMinute(wallet) {
+        function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
 
             // Calculate the elapsed time in minutes
@@ -250,6 +261,21 @@
             const profitPerMinute = totalProfit / elapsedTimeInMinutes;
 
             return profitPerMinute;
+        }
+
+        // Function to calculate total profit per minute for all wallets
+        function calculateTotalProfitPerMinute() {
+            let totalProfitPerMinute = 0;
+            for (const address of walletAddresses) {
+                totalProfitPerMinute += calculateProfitPerMinute(address);
+            }
+            return totalProfitPerMinute;
+        }
+
+        // Function to update the total profit per minute on the page
+        function updateTotalProfitPerMinute() {
+            const totalProfitPerMinute = calculateTotalProfitPerMinute();
+            document.getElementById('total-profit').textContent = `$${totalProfitPerMinute.toFixed(4)} / min`;
         }
 
         // Function to display a warning if SOL balance is low
@@ -330,6 +356,9 @@
                     usdc: usdcBalance
                 }));
             }
+
+            // Update total profit per minute after all wallets are processed
+            updateTotalProfitPerMinute();
         }
 
         // Initialize the entire process
@@ -347,4 +376,3 @@
 </body>
 
 </html>
-           
