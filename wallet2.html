@@ -1,4 +1,3 @@
-
 <html lang="en">
 
 <head>
@@ -39,6 +38,14 @@
             margin-bottom: 20px;
         }
 
+        /* Total profit per minute styling */
+        #total-profit {
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
         /* Wallet balance grid */
         #wallet-balances {
             display: flex;
@@ -74,37 +81,40 @@
                 width: 100%;
             }
         }
-        
-            /* Styling the SOL balance and warning inline */
-    .sol-balance-wrapper {
-        display: inline-flex;
-        align-items: center; /* Vertically align the text and icon */
-    }
 
-    .sol-balance-wrapper img {
-        margin-left: 8px; /* Adds some space between the text and the warning icon */
-    }
+        /* Styling the SOL balance and warning inline */
+        .sol-balance-wrapper {
+            display: inline-flex;
+            align-items: center; /* Vertically align the text and icon */
+        }
 
-    .low-sol-warning {
-        color: red;
-        font-style: italic;
-        margin-left: 5px;
-    }
+        .sol-balance-wrapper img {
+            margin-left: 8px; /* Adds some space between the text and the warning icon */
+        }
+
+        .low-sol-warning {
+            color: red;
+            font-style: italic;
+            margin-left: 5px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>Wallet Balance Checker</h1>
+        <!-- Display total profit per minute here -->
+        <div id="total-profit">$0.00 / min</div>
 
         <div id="wallet-balances">
             <!-- Wallet balances will be displayed here -->
         </div>
     </div>
+
     <script>
         // Solana Wallet Addresses and their respective names
         const walletInfo = {
-            "Ar6csV9xXc5ZtZENzegjctZfkryLS7gPyHMHZnvArFAy": "RACKNERD",
+           "Ar6csV9xXc5ZtZENzegjctZfkryLS7gPyHMHZnvArFAy": "RACKNERD",
             "2934dBsB1jQtWNZZHcUvBWLeap65VfqmP65ECCrtBsyo": "GCLOUD",
             "3jgvLCnEwqm9MFc4ynFajvwuwUXrD2boA3XruJhs2QbJ": "ORACLE (AGUAYO)",
             "t6RHNzMJ2NEHWDoEbxBixRK7hE79zGEX5T87sGyYzDu": "ORACLE2 (SAN PEDRO)",
@@ -216,8 +226,8 @@
                     usdc: 0
                 };
             }
-
-            // Add the current changes to the cumulative totals
+            
+                        // Add the current changes to the cumulative totals
             cumulativeChanges[wallet].sol += solChange;
             cumulativeChanges[wallet].wsol += wsolChange;
             cumulativeChanges[wallet].usdc += usdcChange;
@@ -232,7 +242,7 @@
         }
 
         // Function to calculate profit per minute
-                function calculateProfitPerMinute(wallet) {
+        function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
 
             // Calculate the elapsed time in minutes
@@ -249,6 +259,21 @@
             const profitPerMinute = totalProfit / elapsedTimeInMinutes;
 
             return profitPerMinute;
+        }
+
+        // Function to calculate total profit per minute for all wallets
+        function calculateTotalProfitPerMinute() {
+            let totalProfitPerMinute = 0;
+            for (const address of walletAddresses) {
+                totalProfitPerMinute += calculateProfitPerMinute(address);
+            }
+            return totalProfitPerMinute;
+        }
+
+        // Function to update the total profit per minute on the page
+        function updateTotalProfitPerMinute() {
+            const totalProfitPerMinute = calculateTotalProfitPerMinute();
+            document.getElementById('total-profit').textContent = `$${totalProfitPerMinute.toFixed(4)} / min`;
         }
 
         // Function to display a warning if SOL balance is low
@@ -329,6 +354,9 @@
                     usdc: usdcBalance
                 }));
             }
+
+            // Update total profit per minute after all wallets are processed
+            updateTotalProfitPerMinute();
         }
 
         // Initialize the entire process
