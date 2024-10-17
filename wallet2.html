@@ -101,18 +101,21 @@
             <!-- Wallet balances will be displayed here -->
         </div>
     </div>
-
     <script>
-        // Solana Wallet Addresses
-        const walletAddresses = [
-            "Ar6csV9xXc5ZtZENzegjctZfkryLS7gPyHMHZnvArFAy",
-            "2934dBsB1jQtWNZZHcUvBWLeap65VfqmP65ECCrtBsyo",
-            "3jgvLCnEwqm9MFc4ynFajvwuwUXrD2boA3XruJhs2QbJ",
-            "t6RHNzMJ2NEHWDoEbxBixRK7hE79zGEX5T87sGyYzDu",
-        ];
+        // Solana Wallet Addresses and their respective names
+        const walletInfo = {
+            "Ar6csV9xXc5ZtZENzegjctZfkryLS7gPyHMHZnvArFAy": "RACKNERD",
+            "2934dBsB1jQtWNZZHcUvBWLeap65VfqmP65ECCrtBsyo": "GCLOUD",
+            "3jgvLCnEwqm9MFc4ynFajvwuwUXrD2boA3XruJhs2QbJ": "ORACLE (AGUAYO)",
+            "t6RHNzMJ2NEHWDoEbxBixRK7hE79zGEX5T87sGyYzDu": "ORACLE2 (SAN PEDRO)",
+            "GANDakqH37BYBsuxUj24wnWe4cdVgfdzMH9buC45rBU1": "ORACLE3 (ORIZABA)",
+        };
+
+        // List of wallet addresses (keys from walletInfo)
+        const walletAddresses = Object.keys(walletInfo);
 
         // QuickNode RPC Endpoint
-        const QUICKNODE_RPC = 'https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/631c5a1be220a15e4e51c2cd2ab1955b';
+        const QUICKNODE_RPC = 'https://g.w.lavanet.xyz:443/gateway/solana/rpc-http/631c5a1be220a15e4e51c2cd2ab1955b2';
 
         // Token Mint Addresses
         const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -227,11 +230,9 @@
             const totalUsdcChange = cumulativeChanges[wallet].usdc;
             return solChangeInUsd + wsolChangeInUsd + totalUsdcChange; // Combine SOL (in USD), WSOL, and USDC changes
         }
-        
-        //
-        
-                // Function to calculate profit per minute
-        function calculateProfitPerMinute(wallet) {
+
+        // Function to calculate profit per minute
+                function calculateProfitPerMinute(wallet) {
             const currentTime = new Date();
 
             // Calculate the elapsed time in minutes
@@ -250,16 +251,16 @@
             return profitPerMinute;
         }
 
-// Function to display a warning if SOL balance is low
-function checkLowSolWarning(solBalance) {
-    if (solBalance < 0.10) {
-        return `
-            <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
-            <em class="low-sol-warning">You are running low on SOL!</em>
-        `;
-    }
-    return '';
-}
+        // Function to display a warning if SOL balance is low
+        function checkLowSolWarning(solBalance) {
+            if (solBalance < 0.10) {
+                return `
+                    <img src="https://www.svgrepo.com/show/15343/warning-sign.svg" alt="Warning" style="width:20px; height:20px;">
+                    <em class="low-sol-warning">You are running low on SOL!</em>
+                `;
+            }
+            return '';
+        }
 
         // Function to fetch and display balances, accumulated changes, and profit per minute
         async function displayBalances() {
@@ -272,7 +273,7 @@ function checkLowSolWarning(solBalance) {
                 // Create a div to hold the wallet balances
                 const balanceDiv = document.createElement('div');
                 balanceDiv.classList.add('wallet-box');
-                balanceDiv.innerHTML = `<strong>Wallet:</strong> ${address} <br> <strong>Fetching balances...</strong>`;
+                balanceDiv.innerHTML = `<strong>Wallet Name:</strong> ${walletInfo[address]} <br> <strong>Fetching balances...</strong>`;
                 balancesDiv.appendChild(balanceDiv);
 
                 // Fetch SOL, WSOL, and USDC balances
@@ -303,22 +304,23 @@ function checkLowSolWarning(solBalance) {
                 // Check if SOL balance is low and add a warning if applicable
                 const lowSolWarning = checkLowSolWarning(solBalance);
 
-              // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
-balanceDiv.innerHTML = `
-    <strong>Wallet:</strong> ${address} <br>
-    <div class="sol-balance-wrapper">
-        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
-        ${checkLowSolWarning(solBalance)}
-    </div>
-    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
-    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
-    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
-    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
-    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
-    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
-    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
-    <em>Since ${formatTime(startTime)}</em>
-`;
+                // Update the balanceDiv with the fetched balances, accumulated changes, profit, and profit per minute
+                balanceDiv.innerHTML = `
+                    <strong>Wallet Name:</strong> ${walletInfo[address]} <br>
+                    <strong>Wallet Address:</strong> ${address} <br>
+                    <div class="sol-balance-wrapper">
+                        <strong>SOL Balance:</strong> ${solBalance.toFixed(4)} SOL
+                        ${lowSolWarning}
+                    </div>
+                    <br><strong>WSOL Balance:</strong> ${wsolBalance.toFixed(4)} WSOL <br>
+                    <strong>USDC Balance:</strong> ${usdcBalance.toFixed(4)} USDC <br>
+                    <strong>Total SOL Change:</strong> ${cumulativeChanges[address].sol.toFixed(4)} SOL <br>
+                    <strong>Total WSOL Change:</strong> ${cumulativeChanges[address].wsol.toFixed(4)} WSOL <br>
+                    <strong>Total USDC Change:</strong> ${cumulativeChanges[address].usdc.toFixed(4)} USDC <br>
+                    <strong>Profit (USD):</strong> $${profit.toFixed(4)} <br>
+                    <strong>Profit Per Minute:</strong> $${profitPerMinute.toFixed(4)} / min <br>
+                    <em>Since ${formatTime(startTime)}</em>
+                `;
 
                 // Store the current balances in localStorage for the next check
                 localStorage.setItem(address, JSON.stringify({
