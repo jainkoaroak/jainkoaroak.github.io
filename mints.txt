@@ -5,6 +5,7 @@
 “JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN”  #jup
 “HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3” #pyth
 “27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4” #JLP
+"jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v", # JUPSOL
 “HhJpBhRRn4g56VsyLuT8DL5Bv31HkXqsrahTTUCZeZg4” #MYRO
 “EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm” #WIF
 “7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr” #POPCAT
@@ -15,7 +16,7 @@
 “Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB” #usdt
 “4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R” #ray
 “J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn” #jitosol
-“mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So”  #mol
+“mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So”  #msol
 “7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj” #stsol
 “HNTvzaqTmDxJbi3isreXtUn9MUJEJy1bp9bo1rpGEGhi” #aurasol
 “jucy5XJ76pHVvtPZb5TKRcGQExkwit2P5s4vY8UzmpC”  #jucysol
@@ -42,3 +43,15 @@
 “H6JtPso9FsoWj2ni6XzhT4dhQxADxkRsHT6GfVfwdGQP” #MONEY
 “ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY” #Moodeng
 “8oAiUkC1gpr4Tuz3ZA7YUntWE47sop1fYmGWo4Zrpump” #petertodd
+"45EgCwcPXYagBC7KqBin4nCFgEZWN7f3Y6nACwxqMCWX", # MOUTAI
+"CS7LmjtuugEUWtFgfyto79nrksKigv7Fdcp9qPuigdLs", # MANYU
+"3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump", # BILLY
+"Fair3oKKbcrGjcka2tTYQdyS6sYnyyQqbCTTiNmE3WHK", # FAIR
+"CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",  # GOAT
+
+"BoAQaykj3LtkM2Brevc7cQcRAzpqcsP47nJ2rkyopump", # FOREST
+"CUzSRjBvqFFq45mg6j9oyQrDxyUTHEKM2xqKzDkZpump", # SYDNEY
+"FqnqT1GKi8S4Gyk5wnSKvJjXW48HqGtKJt9WS4o2pump", # BAKSO
+"4qNX615pV1oufdodNoiBzUsrUE3ww57DYg6LsUtupump", # CLAUDIUS
+"GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump", # ACT
+"HeJUFDxfJSzYFUuHLxkMqCgytU31G6mjP4wKviwqpump", # GNON
