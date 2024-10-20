@@ -13,7 +13,6 @@
     "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
     "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump",
-    "H6JtPso9FsoWj2ni6XzhT4dhQxADxkRsHT6GfVfwdGQP",
     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
     "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
     "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
